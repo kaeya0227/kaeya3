@@ -4,6 +4,7 @@
 
 index.html
 README.md
+assets 文件夹
 config 文件夹
 data 文件夹
 
@@ -24,3 +25,4 @@ https://你的用户名.github.io/你的仓库名/
 2. 这个版本不需要 Actions 工作流。
 3. 以后每天自动化只需要更新 data/latest.json、data/runs.json、data/archive/YYYY-MM-DD.json。
 4. 等你新仓库建好后，把仓库名发给我，我再把 Codex 每天 9 点自动化改到新仓库。
+5. 凯亚皮肤需要 assets/kaeya-birthday-2023.png 和 index.html 同时上传。
