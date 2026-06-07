@@ -1,0 +1,26 @@
+这是“新仓库直接上传版”。
+
+你新建一个 GitHub 仓库后，把这个文件夹里的所有内容一起上传：
+
+index.html
+README.md
+config 文件夹
+data 文件夹
+
+上传后，在 GitHub 仓库里设置：
+
+Settings -> Pages
+Source 选择 Deploy from a branch
+Branch 选择 main
+Folder 选择 / (root)
+Save
+
+然后等待 1-2 分钟，页面地址一般是：
+
+https://你的用户名.github.io/你的仓库名/
+
+注意：
+1. 这个版本不需要 .github 文件夹。
+2. 这个版本不需要 Actions 工作流。
+3. 以后每天自动化只需要更新 data/latest.json、data/runs.json、data/archive/YYYY-MM-DD.json。
+4. 等你新仓库建好后，把仓库名发给我，我再把 Codex 每天 9 点自动化改到新仓库。
