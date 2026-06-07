@@ -632,6 +632,7 @@
       grid-template-columns: 110px minmax(0, 1fr) 90px;
       gap: 12px;
       align-items: center;
+      width: 100%;
       min-height: 58px;
       padding: 12px 14px;
       border: 1px solid var(--line);
@@ -639,6 +640,26 @@
       background: rgba(247, 252, 255, 0.90);
       box-shadow: 0 10px 26px rgba(5, 13, 28, 0.18);
       backdrop-filter: blur(16px);
+      color: var(--ink);
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .day:hover,
+    .day:focus-visible,
+    .day.active {
+      border-color: rgba(110, 195, 232, 0.82);
+      background: rgba(240, 251, 255, 0.96);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .day[disabled] {
+      cursor: not-allowed;
+      opacity: 0.66;
+      transform: none;
     }
 
     .day strong {
@@ -842,8 +863,8 @@
           <section class="section active" id="today">
             <div class="section-head">
               <div>
-                <h2>今日精读摘要</h2>
-                <p>每天约 20 篇都按完整研究卡片整理，兼顾最近新增、过去一年回溯和中文期刊轮换。</p>
+                <h2 id="todayTitle">今日精读摘要</h2>
+                <p id="todayDescription">每天约 20 篇都按完整研究卡片整理，兼顾最近新增、过去一年回溯和中文期刊轮换。</p>
               </div>
               <div class="count" id="resultCount">0 篇</div>
             </div>
@@ -867,7 +888,7 @@
                 <h2>历史归档</h2>
                 <p>每天运行后保留记录，方便按周、按月回看。</p>
               </div>
-              <div class="count">原型视图</div>
+              <div class="count" id="archiveCount">归档读取中</div>
             </div>
             <div class="timeline" id="timeline"></div>
           </section>
@@ -1399,6 +1420,8 @@ coverage_note</pre>
       tab: "today",
       query: "",
       sort: "priority",
+      viewMode: "latest",
+      currentDay: "",
       saved: new Set(JSON.parse(localStorage.getItem("econRadarSaved") || "[]"))
     };
 
@@ -1435,6 +1458,16 @@ coverage_note</pre>
     function rebuildFilterOptions() {
       sourceNames = ["全部", ...Array.from(new Set(papers.map(p => p.source).filter(Boolean)))];
       topicNames = ["全部", ...Array.from(new Set(papers.flatMap(p => p.tags || [])))];
+    }
+
+    function resetFilterState() {
+      state.source = "all";
+      state.topic = "all";
+      state.priority = "all";
+      state.query = "";
+      state.sort = "priority";
+      if (el("query")) el("query").value = "";
+      if (el("sort")) el("sort").value = "priority";
     }
 
     function makeChip(label, group, value, active) {
@@ -1555,15 +1588,46 @@ coverage_note</pre>
       el("metricHigh").textContent = papers.filter(p => normalizePriority(p.priority) === "high").length;
     }
 
+    function archivePathFor(item) {
+      return item.path || item.url || (item.day && String(item.count || "").includes("篇") ? `data/archive/${item.day}.json` : "");
+    }
+
+    function archiveDayFor(item) {
+      return item.day || item.date || "";
+    }
+
+    function normalizeRunItem(item) {
+      const day = archiveDayFor(item);
+      const path = archivePathFor(item);
+      const count = typeof item.count === "number" ? `${item.count} 篇` : firstText(item.count, path ? "可查看" : "待接入");
+      return {
+        day,
+        path,
+        label: firstText(item.label, item.title, path ? "已归档" : "待接入"),
+        desc: firstText(item.desc, item.summary, item.note, path ? "点击查看当天完整文献卡片。" : "这一天还没有写入归档文件。"),
+        count,
+        available: Boolean(day && path)
+      };
+    }
+
     function renderStaticSections() {
       const timeline = el("timeline");
-      timeline.innerHTML = archive.map(item => `
-        <div class="day">
-          <strong>${item.day}</strong>
-          <span>${item.label} - ${item.desc}</span>
-          <span>${item.count}</span>
-        </div>
-      `).join("");
+      const archiveItems = archive.map(normalizeRunItem).filter(item => item.day);
+      const availableCount = archiveItems.filter(item => item.available).length;
+      el("archiveCount").textContent = availableCount ? `${availableCount} 天可查看` : "暂无归档";
+      timeline.innerHTML = archiveItems.length ? archiveItems.map(item => {
+        const active = state.viewMode === "archive" && state.currentDay === item.day;
+        const attrs = item.available
+          ? `data-archive-path="${escapeHtml(item.path)}" data-archive-day="${escapeHtml(item.day)}"`
+          : "disabled";
+        return `
+          <button class="day${active ? " active" : ""}" type="button" ${attrs}>
+            <strong>${escapeHtml(item.day)}</strong>
+            <span>${escapeHtml(item.label)} - ${escapeHtml(item.desc)}</span>
+            <span>${escapeHtml(item.count)}</span>
+          </button>
+        `;
+      }).join("") : `<div class="empty">还没有历史归档。自动化成功运行后，这里会按日期累积。</div>`;
 
       const trendGrid = el("trendGrid");
       trendGrid.innerHTML = trends.map(item => `
@@ -1591,13 +1655,89 @@ coverage_note</pre>
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
+    function updateTodayCopy() {
+      if (state.viewMode === "archive") {
+        el("todayTitle").textContent = `${state.currentDay} 历史归档`;
+        el("todayDescription").textContent = "正在查看这一天保存下来的完整文献卡片。再次点击“今日 20 篇”可以回到最新推送。";
+      } else {
+        el("todayTitle").textContent = "今日精读摘要";
+        el("todayDescription").textContent = "每天约 20 篇都按完整研究卡片整理，兼顾最近新增、过去一年回溯和中文期刊轮换。";
+      }
+    }
+
+    function refreshDatasetView() {
+      rebuildFilterOptions();
+      renderFilterChips();
+      renderStaticSections();
+      updateTodayCopy();
+      renderPapers();
+    }
+
+    function cacheBusted(path) {
+      return `${path}${path.includes("?") ? "&" : "?"}updated=${Date.now()}`;
+    }
+
+    async function fetchJson(path) {
+      const response = await fetch(cacheBusted(path), { cache: "no-store" });
+      if (!response.ok) throw new Error(`${path} ${response.status}`);
+      return response.json();
+    }
+
+    async function loadLatestView() {
+      try {
+        const data = await fetchJson("data/latest.json");
+        applyDataset(data, { preserveArchive: true });
+        state.viewMode = "latest";
+        state.currentDay = "";
+        resetFilterState();
+        refreshDatasetView();
+        setActiveTab("today");
+      } catch (error) {
+        console.warn("Failed to load latest data.", error);
+        alert("最新推送暂时读取失败，请稍后刷新页面再试。");
+      }
+    }
+
+    async function loadArchiveView(path, day) {
+      try {
+        const data = await fetchJson(path);
+        applyDataset(data, { preserveArchive: true });
+        state.viewMode = "archive";
+        state.currentDay = day;
+        resetFilterState();
+        refreshDatasetView();
+        setActiveTab("today");
+      } catch (error) {
+        console.warn("Failed to load archive data.", error);
+        alert(`${day} 的归档文件暂时读取失败。可能是这一天还没有上传 data/archive/${day}.json。`);
+      }
+    }
+
     function wireEvents() {
       document.querySelectorAll(".tab").forEach(tab => {
-        tab.addEventListener("click", () => setActiveTab(tab.dataset.tab));
+        tab.addEventListener("click", () => {
+          if (tab.dataset.tab === "today" && state.viewMode === "archive") {
+            loadLatestView();
+            return;
+          }
+          setActiveTab(tab.dataset.tab);
+        });
       });
 
       document.querySelectorAll("[data-tab-target]").forEach(button => {
-        button.addEventListener("click", () => setActiveTab(button.dataset.tabTarget));
+        button.addEventListener("click", () => {
+          if (button.dataset.tabTarget === "today" && state.viewMode === "archive") {
+            loadLatestView();
+            return;
+          }
+          setActiveTab(button.dataset.tabTarget);
+        });
+      });
+
+      el("timeline").addEventListener("click", event => {
+        const button = event.target.closest("[data-archive-path]");
+        if (!button) return;
+        loadArchiveView(button.dataset.archivePath, button.dataset.archiveDay);
       });
 
       el("query").addEventListener("input", event => {
@@ -1662,31 +1802,38 @@ coverage_note</pre>
       });
     }
 
-    function applyDataset(data) {
+    function applyDataset(data, options = {}) {
       if (!data || !Array.isArray(data.papers)) return;
       papers = data.papers;
       if (Array.isArray(data.trends)) trends = data.trends;
       if (Array.isArray(data.sources)) sources = data.sources;
-      if (Array.isArray(data.archive)) archive = data.archive;
+      if (!options.preserveArchive && Array.isArray(data.archive)) archive = data.archive;
     }
 
     async function loadDataset() {
       try {
-        const response = await fetch(`data/latest.json?updated=${Date.now()}`, { cache: "no-store" });
-        if (!response.ok) throw new Error(`data/latest.json ${response.status}`);
-        applyDataset(await response.json());
+        applyDataset(await fetchJson("data/latest.json"));
       } catch (error) {
         console.warn("Using embedded fallback data.", error);
+      }
+
+      try {
+        const runs = await fetchJson("data/runs.json");
+        if (Array.isArray(runs) && runs.length) {
+          archive = runs
+            .map(normalizeRunItem)
+            .sort((a, b) => b.day.localeCompare(a.day));
+        }
+      } catch (error) {
+        console.warn("Using embedded archive list.", error);
+        archive = archive.map(normalizeRunItem);
       }
     }
 
     async function init() {
       await loadDataset();
-      rebuildFilterOptions();
-      renderFilterChips();
-      renderStaticSections();
+      refreshDatasetView();
       wireEvents();
-      renderPapers();
     }
 
     init();
