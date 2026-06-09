@@ -1,0 +1,14 @@
+[
+  {
+    "date": "2026-06-09",
+    "path": "data/archive/2026-06-09.json",
+    "label": "manual-update",
+    "count": 20
+  },
+  {
+    "date": "2026-06-07",
+    "path": "data/archive/2026-06-07.json",
+    "label": "seed-data",
+    "count": 20
+  }
+]
