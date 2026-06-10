@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-06-10",
+    "path": "data/archive/2026-06-10.json",
+    "label": "manual-update",
+    "count": 20
+  },
+  {
     "date": "2026-06-09",
     "path": "data/archive/2026-06-09.json",
     "label": "manual-update",
