@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-06-14",
+    "path": "data/archive/2026-06-14.json",
+    "label": "manual-update",
+    "count": 20
+  },
+  {
     "date": "2026-06-13",
     "path": "data/archive/2026-06-13.json",
     "label": "manual-backfill",
