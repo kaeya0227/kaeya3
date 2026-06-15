@@ -8,7 +8,10 @@
     "recent_additions": 5,
     "rolling_backfill": 10,
     "journal_rotation": 5,
-    "backfill_days": 365
+    "backfill_days": 365,
+    "temporary_focus": "flexible_work",
+    "focus_target_min": 6,
+    "focus_target_max": 10
   },
   "topics": [
     {
@@ -35,6 +38,58 @@
         "task",
         "human capital",
         "productivity"
+      ]
+    },
+    {
+      "id": "flexible_work",
+      "name": "灵活用工、灵活就业与平台劳动",
+      "priority": "highest",
+      "keywords": [
+        "gig economy",
+        "platform work",
+        "platform labor",
+        "flexible employment",
+        "flexible work",
+        "alternative work arrangements",
+        "nonstandard employment",
+        "contingent work",
+        "temporary work",
+        "temporary agency work",
+        "contract work",
+        "independent contractor",
+        "independent contracting",
+        "on-demand work",
+        "crowdwork",
+        "digital labor platform",
+        "self-employment",
+        "informal employment",
+        "remote work",
+        "work from home",
+        "hybrid work",
+        "telework",
+        "algorithmic management",
+        "platform regulation",
+        "worker classification",
+        "worker misclassification",
+        "portable benefits",
+        "social protection",
+        "灵活用工",
+        "灵活就业",
+        "平台劳动",
+        "零工经济",
+        "新就业形态",
+        "平台用工",
+        "算法管理",
+        "外包用工",
+        "劳务派遣",
+        "非标准就业",
+        "远程办公",
+        "居家办公",
+        "混合办公",
+        "独立承包人",
+        "劳动关系认定",
+        "职业伤害保障",
+        "平台社会保障"
       ]
     },
     {
@@ -141,6 +196,7 @@
     "evidence_note"
   ],
   "rules": [
+    "During the current temporary focus period, prioritize 6-10 high-quality flexible-work, gig-economy, platform-labor, remote-work, temporary-work, or self-employment papers in each 20-paper update; do not fill the quota with weak or unverifiable papers.",
     "Every selected paper should receive the full structured deep-summary format; do not split the daily list into detailed and brief cards.",
     "For each paper, clearly separate research motivation, research background, data source, innovation, concrete paper content, mechanism, findings, relevance, and evidence limits.",
     "Do not fabricate papers, authors, links, abstracts, or findings.",
