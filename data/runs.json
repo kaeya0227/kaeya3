@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-06-23",
+    "path": "data/archive/2026-06-23.json",
+    "label": "manual-labor-empirical-update",
+    "count": 20
+  },
+  {
+    "date": "2026-06-18",
+    "path": "data/archive/2026-06-18.json",
+    "label": "manual-labor-empirical-update",
+    "count": 20
+  },
+  {
     "date": "2026-06-17",
     "path": "data/archive/2026-06-17.json",
     "label": "manual-labor-empirical-update",
